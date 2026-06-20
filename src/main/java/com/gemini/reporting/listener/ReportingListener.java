@@ -5,6 +5,7 @@ import com.aventstack.extentreports.ExtentTest;
 import com.gemini.reporting.context.ReportingContext;
 import com.gemini.reporting.extent.ExtentManager;
 import com.gemini.reporting.utils.AllureUtil;
+import com.gemini.reporting.utils.PlaywrightUtil;
 import com.gemini.reporting.utils.ScreenshotUtil;
 import com.gemini.reporting.utils.APIAttachmentUtil;
 
@@ -102,6 +103,28 @@ public class ReportingListener implements ITestListener {
         }
 
         System.out.println("No Selenium driver or API log found");
+
+// PLAYWRIGHT FLOW
+        byte[] pwScreenshot = ReportingContext.getPwScreenshot();
+
+        if (pwScreenshot != null) {
+
+            if (isExtent && test.get() != null) {
+                test.get().fail(result.getThrowable());
+
+                String base64 =
+                        Base64.getEncoder().encodeToString(pwScreenshot);
+
+                test.get().addScreenCaptureFromBase64String(base64);
+            }
+
+            if (isAllure) {
+                PlaywrightUtil.attachScreenshot(pwScreenshot);
+            }
+
+            return;
+        }
+
     }
 
 
