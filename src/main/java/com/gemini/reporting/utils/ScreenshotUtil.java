@@ -1,4 +1,4 @@
-package com.company.reporting.utils;
+package com.gemini.reporting.utils;
 
 import org.openqa.selenium.*;
 

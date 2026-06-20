@@ -1,4 +1,4 @@
-package com.company.reporting.context;
+package com.gemini.reporting.context;
 
 import org.openqa.selenium.WebDriver;
 

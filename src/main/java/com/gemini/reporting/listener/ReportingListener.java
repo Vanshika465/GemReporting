@@ -1,18 +1,17 @@
-package com.company.reporting.listener;
+package com.gemini.reporting.listener;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 //import com.company.reporting.allure.AllureHelper;
-import com.company.reporting.context.ReportingContext;
-import com.company.reporting.extent.ExtentManager;
-import com.company.reporting.utils.ScreenshotUtil;
+import com.gemini.reporting.context.ReportingContext;
+import com.gemini.reporting.extent.ExtentManager;
+import com.gemini.reporting.utils.AllureUtil;
+import com.gemini.reporting.utils.ScreenshotUtil;
 //import io.qameta.allure.Allure;
 //import io.qameta.allure.Allure;
-import io.qameta.allure.Allure;
 import org.openqa.selenium.WebDriver;
 import org.testng.*;
 
-import java.io.ByteArrayInputStream;
 import java.util.Base64;
 
 public class ReportingListener implements ITestListener {
@@ -22,7 +21,6 @@ public class ReportingListener implements ITestListener {
     private String reportType;
     private boolean isAllure;
     private boolean isExtent;
-    private boolean isSerenity;
     @Override
     public void onStart(ITestContext context) {
 
@@ -30,7 +28,6 @@ public class ReportingListener implements ITestListener {
 
         isExtent = "extent".equalsIgnoreCase(reportType);
         isAllure = "allure".equalsIgnoreCase(reportType);
-        isSerenity = "serenity".equalsIgnoreCase(reportType);
 
         if (isExtent) {
             extent = ExtentManager.getReportObject();
@@ -80,12 +77,10 @@ public class ReportingListener implements ITestListener {
 
         // ALLURE MODE
         if (isAllure && screenshot != null) {
-            Allure.addAttachment(
-                    "Failure Screenshot",
-                    new ByteArrayInputStream(screenshot)
-            );
-        }
+            AllureUtil.attachScreenshot(screenshot);
 
+
+        }
     }
 
     @Override
