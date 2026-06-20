@@ -1,4 +1,4 @@
-````md
+````
 # Gemini Reporting SDK
 
 A unified, plug-and-play **test reporting framework** that supports multiple automation stacks including:
