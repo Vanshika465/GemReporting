@@ -2,12 +2,12 @@ package com.gemini.reporting.listener;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-//import com.company.reporting.allure.AllureHelper;
 import com.gemini.reporting.context.ReportingContext;
 import com.gemini.reporting.extent.ExtentManager;
 import com.gemini.reporting.utils.AllureUtil;
 import com.gemini.reporting.utils.ScreenshotUtil;
-//import io.qameta.allure.Allure;
+import com.gemini.reporting.utils.APIAttachmentUtil;
+
 //import io.qameta.allure.Allure;
 import org.openqa.selenium.WebDriver;
 import org.testng.*;
@@ -56,32 +56,54 @@ public class ReportingListener implements ITestListener {
     public void onTestFailure(ITestResult result) {
 
         WebDriver driver = ReportingContext.getDriver();
+        String apiLog = ReportingContext.getApiLog();
 
-        if (driver == null) {
-            System.out.println("Driver is null");
+        // =========================
+        // SELENIUM FLOW
+        // =========================
+        if (driver != null) {
+
+            byte[] screenshot =
+                    ScreenshotUtil.getScreenshotBytes(driver);
+
+            // EXTENT MODE
+            if (isExtent && test.get() != null) {
+                test.get().fail(result.getThrowable());
+
+                String base64 =
+                        Base64.getEncoder().encodeToString(screenshot);
+
+                test.get().addScreenCaptureFromBase64String(base64);
+            }
+
+            // ALLURE MODE
+            if (isAllure && screenshot != null) {
+                AllureUtil.attachScreenshot(screenshot);
+            }
+
             return;
         }
 
-        byte[] screenshot =
-                ScreenshotUtil.getScreenshotBytes(driver);
+        // =========================
+        // REST ASSURED FLOW
+        // =========================
+        if (apiLog != null) {
 
-        // EXTENT MODE
-        if (isExtent && test.get() != null) {
-            test.get().fail(result.getThrowable());
+            if (isExtent && test.get() != null) {
+                test.get().fail(result.getThrowable());
+                test.get().info(apiLog);
+            }
 
-            String base64 =
-                    Base64.getEncoder().encodeToString(screenshot);
+            if (isAllure) {
+                APIAttachmentUtil.attachApiLog(apiLog);
+            }
 
-            test.get().addScreenCaptureFromBase64String(base64);
+            return;
         }
 
-        // ALLURE MODE
-        if (isAllure && screenshot != null) {
-            AllureUtil.attachScreenshot(screenshot);
-
-
-        }
+        System.out.println("No Selenium driver or API log found");
     }
+
 
     @Override
     public void onFinish(ITestContext context) {
