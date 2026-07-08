@@ -1,17 +1,21 @@
-package com.gemini.reporting.listener;
+ package com.gemini.reporting.listener;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.gemini.reporting.context.ReportingContext;
-import com.gemini.reporting.extent.ExtentManager;
+import com.gemini.reporting.control.ReportControl;
+import com.gemini.reporting.manager.ReportManager;
+import com.gemini.reporting.utils.APIAttachmentUtil;
 import com.gemini.reporting.utils.AllureUtil;
 import com.gemini.reporting.utils.PlaywrightUtil;
 import com.gemini.reporting.utils.ScreenshotUtil;
-import com.gemini.reporting.utils.APIAttachmentUtil;
 
-//import io.qameta.allure.Allure;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
-import org.testng.*;
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
 
 import java.util.Base64;
 
@@ -19,36 +23,61 @@ public class ReportingListener implements ITestListener {
 
     private ExtentReports extent;
     private final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
-    private String reportType;
-    private boolean isAllure;
-    private boolean isExtent;
+
+    private static final Logger logger =
+            LogManager.getLogger(ReportingListener.class);
+
     @Override
     public void onStart(ITestContext context) {
+        logger.info("Execution Started");
 
-        reportType = System.getProperty("reportType", "extent");
+        // For old TestNG projects
+        // Cucumber projects will initialize inside Cucumber hook
+        String cmdType = System.getProperty("reportType");
 
-        isExtent = "extent".equalsIgnoreCase(reportType);
-        isAllure = "allure".equalsIgnoreCase(reportType);
-
-        if (isExtent) {
-            extent = ExtentManager.getReportObject();
+        if (ReportManager.getReportType() == null) {
+            ReportManager.initialize(cmdType);
         }
-
-        System.out.println("Report Type = " + reportType);
+        ReportControl.set(ReportManager.getReportType());
     }
 
     @Override
     public void onTestStart(ITestResult result) {
-        if ("extent".equalsIgnoreCase(reportType)) {
-            ExtentTest extentTest =
-                    extent.createTest(result.getMethod().getMethodName());
-            test.set(extentTest);
+        String testName = result.getMethod().getMethodName();
+
+        if ("runScenario".equals(testName)) {
+            return;
         }
+
+
+        if (ReportManager.isExtent()) {
+            ReportControl.set("extent");
+
+            extent = ReportManager.getExtent();
+
+            if (extent != null) {
+                ExtentTest extentTest = extent.createTest(testName);
+
+                ReportManager.setCurrentTest(extentTest);
+                test.set(extentTest);
+            }
+        }
+        else if (ReportManager.isAllure()) {
+            ReportControl.set("allure");
+        }
+
+        logger.info("Test Started: {}", testName);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        if ("extent".equalsIgnoreCase(reportType) && test.get() != null) {
+        String testName = result.getMethod().getMethodName();
+
+        if ("runScenario".equals(testName)) {
+            return;
+        }
+
+        if (ReportManager.isExtent() && test.get() != null) {
             test.get().pass("Test Passed");
         }
     }
@@ -56,82 +85,88 @@ public class ReportingListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
 
-        WebDriver driver = ReportingContext.getDriver();
-        String apiLog = ReportingContext.getApiLog();
+        String testName = result.getMethod().getMethodName();
+        logger.error("Test Failed: {}", testName);
 
-        // =========================
-        // SELENIUM FLOW
-        // =========================
-        if (driver != null) {
+        if (result.getThrowable() != null) {
+            logger.error(result.getThrowable().getMessage(), result.getThrowable());
+        }
 
-            byte[] screenshot =
-                    ScreenshotUtil.getScreenshotBytes(driver);
-
-            // EXTENT MODE
-            if (isExtent && test.get() != null) {
-                test.get().fail(result.getThrowable());
-
-                String base64 =
-                        Base64.getEncoder().encodeToString(screenshot);
-
-                test.get().addScreenCaptureFromBase64String(base64);
-            }
-
-            // ALLURE MODE
-            if (isAllure && screenshot != null) {
-                AllureUtil.attachScreenshot(screenshot);
-            }
-
+        if ("runScenario".equals(testName)) {
             return;
         }
 
-        // =========================
-        // REST ASSURED FLOW
-        // =========================
-        if (apiLog != null) {
+        if (ReportManager.isExtent() && test.get() != null) {
+            Throwable error = result.getThrowable();
 
-            if (isExtent && test.get() != null) {
-                test.get().fail(result.getThrowable());
+            if (ReportManager.isExtent() && test.get() != null) {
+                test.get().fail("Test Failed: " + testName);
+
+                if (error != null) {
+                    test.get().fail(error.getMessage());
+                    test.get().fail(error);
+                }
+            }
+        }
+
+        WebDriver driver = ReportingContext.getDriver();
+        String apiLog = ReportingContext.getApiLog();
+        byte[] pwScreenshot = ReportingContext.getPwScreenshot();
+
+        // Selenium
+        if (driver != null) {
+            byte[] screenshot = ScreenshotUtil.getScreenshotBytes(driver);
+
+            if (screenshot != null) {
+                if (ReportManager.isExtent() && test.get() != null) {
+                    String base64 = Base64.getEncoder()
+                            .encodeToString(screenshot);
+                    test.get().addScreenCaptureFromBase64String(base64);
+                }
+
+                if (ReportManager.isAllure()) {
+                    AllureUtil.attachScreenshot(screenshot);
+                }
+            }
+            return;
+        }
+
+        // API
+        if (apiLog != null) {
+            if (ReportManager.isExtent() && test.get() != null) {
                 test.get().info(apiLog);
             }
 
-            if (isAllure) {
+            if (ReportManager.isAllure()) {
                 APIAttachmentUtil.attachApiLog(apiLog);
             }
-
             return;
         }
 
-        System.out.println("No Selenium driver or API log found");
-
-// PLAYWRIGHT FLOW
-        byte[] pwScreenshot = ReportingContext.getPwScreenshot();
-
+        // Playwright
         if (pwScreenshot != null) {
-
-            if (isExtent && test.get() != null) {
-                test.get().fail(result.getThrowable());
-
-                String base64 =
-                        Base64.getEncoder().encodeToString(pwScreenshot);
-
+            if (ReportManager.isExtent() && test.get() != null) {
+                String base64 = Base64.getEncoder()
+                        .encodeToString(pwScreenshot);
                 test.get().addScreenCaptureFromBase64String(base64);
             }
 
-            if (isAllure) {
+            if (ReportManager.isAllure()) {
                 PlaywrightUtil.attachScreenshot(pwScreenshot);
             }
-
-            return;
         }
-
     }
-
 
     @Override
     public void onFinish(ITestContext context) {
-        if ("extent".equalsIgnoreCase(reportType) && extent != null) {
-            extent.flush();
+
+        // Flush only for normal TestNG extent runs
+        if (ReportManager.isExtent()
+                && ReportManager.getExtent() != null) {
+            ReportManager.getExtent().flush();
         }
+
+        ReportManager.reset();
+        logger.info("Execution completed");
     }
 }

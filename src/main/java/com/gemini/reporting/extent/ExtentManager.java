@@ -30,7 +30,6 @@ public class ExtentManager {
             extent = new ExtentReports();
             extent.attachReporter(reporter);
 
-            extent.setSystemInfo("Tester", "Vanshika");
         }
 
         return extent;
