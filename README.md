@@ -199,7 +199,7 @@ in the same run.
 ```xml id="83mykj"
 <dependency>
     <groupId>com.gemini</groupId>
-    <artifactId>gemini-reporting-sdk</artifactId>
+    <artifactId>GemReport</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -212,7 +212,7 @@ Using annotation:
 
 
 @Listeners(com.gemini.reporting.listener.ReportingListener.class)
-```
+
 
 OR in `testng.xml`:
 
