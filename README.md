@@ -1,32 +1,32 @@
 # GemReport
 
-A plug-and-play reporting framework for automation projects that provides unified reporting across multiple testing frameworks.
+A plug-and-play reporting framework for automation projects that provides a unified reporting solution across multiple testing frameworks.
 
-Supports:
+## Supported Technologies
 
-* Selenium WebDriver (UI)
-* REST Assured (API)
-* Playwright
-* TestNG
-* Cucumber
+- Selenium WebDriver (UI)
+- REST Assured (API)
+- Playwright
+- TestNG
+- Cucumber
 
-GemReport automatically generates **Extent Reports** and **Allure Reports** with screenshots, API logs, and execution logs.
+GemReport automatically generates **Extent Reports** and **Allure Reports** with screenshots, API logs, execution logs, and rich failure evidence.
 
 ---
 
 # Purpose
 
-Automation projects often require repeated setup for:
+Automation projects often require repeated implementation for:
 
-* Reporting
-* Screenshot capture
-* Failure handling
-* API attachments
-* Logging
+- Reporting
+- Screenshot capture
+- Failure handling
+- API attachments
+- Logging
 
-GemReport removes this repeated effort.
+GemReport eliminates this repeated effort by providing a reusable SDK.
 
-Just add the SDK dependency and integrate minimal setup in your project.
+Simply add the dependency, perform minimal integration, and start generating rich reports.
 
 ---
 
@@ -34,13 +34,13 @@ Just add the SDK dependency and integrate minimal setup in your project.
 
 ## Multi-Framework Support
 
-Works with:
+GemReport works with:
 
-* Selenium UI automation
-* API automation
-* Playwright automation
-* TestNG
-* Cucumber
+- Selenium UI Automation
+- REST Assured API Automation
+- Playwright Automation
+- TestNG
+- Cucumber
 
 ---
 
@@ -48,17 +48,19 @@ Works with:
 
 Provides:
 
-* PASS / FAIL status
-* Step logs
-* Failure screenshots
-* API logs
-* Exception details
+- PASS / FAIL status
+- Step-level logs
+- Failure screenshots
+- API logs
+- Exception details
+- Execution logs
 
 Example logs:
 
-* INFO: Opening login page
-* PASS: Login successful
-* FAIL: Username validation failed
+- INFO: Launching browser
+- INFO: Opening Login page
+- PASS: Login successful
+- FAIL: Username validation failed
 
 ---
 
@@ -66,14 +68,14 @@ Example logs:
 
 Provides:
 
-* Screenshot attachments
-* API request/response attachments
-* Failure details
-* Step-level execution logs
+- Screenshot attachments
+- API request/response attachments
+- Failure details
+- Step-level execution logs
 
 Generate report using:
 
-```bash id="k5b2ys"
+```bash
 allure serve allure-results
 ```
 
@@ -81,122 +83,126 @@ allure serve allure-results
 
 # Smart Failure Capture
 
-On failure, SDK automatically captures relevant evidence.
+On failure, GemReport automatically captures relevant evidence.
 
 ## Selenium
 
-* Browser screenshot
+- Browser screenshot
 
 ## API
 
-* Request details
-* Response body
-* Status code
+- Request details
+- Response body
+- Status code
 
 ## Playwright
 
-* Full-page screenshot
+- Full-page screenshot
 
 ---
 
 # Report Switching
 
-GemReport supports two switching mechanisms.
+GemReport supports two report switching mechanisms.
 
 ---
 
-## 1. Command Line Switching (TestNG / Normal Projects)
+## 1. Command-Line Switching (TestNG / Standard Projects)
 
-Run Extent:
+Run Extent Report:
 
-```bash id="ewcklj"
+```bash
 mvn clean test -Pextent
 ```
 
-Run Allure:
+Run Allure Report:
 
-```bash id="l9jlwm"
+```bash
 mvn clean test -Pallure
 ```
 
-OR
+or
 
-```bash id="1ts2x0"
+```bash
 mvn clean test -DreportType=extent
 ```
 
-```bash id="s7jtrv"
+```bash
 mvn clean test -DreportType=allure
 ```
 
-Best for:
+Best suited for:
 
-* Selenium TestNG projects
-* API TestNG projects
-* Playwright projects
+- Selenium TestNG Projects
+- REST Assured Projects
+- Playwright Projects
 
 ---
 
-## 2. Feature Tag Switching (Cucumber)
+## 2. Feature-Level Switching (Cucumber)
 
-Each feature file can choose its report type.
+Each feature file controls its own report type.
 
 Example:
 
 ### UI Feature
 
-```gherkin id="e7vt8e"
+```gherkin
 @allure
 Feature: UI Testing
 ```
 
 ### API Feature
 
-```gherkin id="f4ncb1"
+```gherkin
 @extent
 Feature: API Testing
 ```
 
-SDK reads the feature tag and generates the correct report.
+GemReport reads the feature tag before execution and initializes the appropriate reporting engine automatically.
+
+> **Note:** Report selection is supported only at the **Feature level**. Scenario-level report tags are intentionally ignored to ensure a consistent reporting configuration for all scenarios within a feature.
 
 ---
 
 # Dynamic Runner for Cucumber
 
-Normal Cucumber runner could not switch reporting plugins dynamically per feature.
+Standard Cucumber runners initialize reporting plugins only once for the entire execution.
 
-Example problem:
+Example:
 
-```gherkin id="3x33cx"
-ui.feature -> @allure
-api.feature -> @extent
+```
+ui.feature   -> @allure
+api.feature  -> @extent
 ```
 
-Normal runner uses one plugin for the whole execution.
+A normal runner cannot switch reporting engines between features.
 
-To solve this, GemReport uses a **Dynamic Runner**.
+To overcome this limitation, GemReport provides a **Dynamic Runner**.
 
-Dynamic Runner:
+The Dynamic Runner:
 
-* Reads feature files one by one
-* Detects feature tags
-* Chooses report type
-* Runs features separately
+- Reads feature files individually
+- Detects feature-level report tags
+- Initializes the appropriate reporting engine
+- Executes the feature
+- Flushes the generated report
+- Repeats the process for remaining features
 
 This enables:
 
-* UI feature → Allure
-* API feature → Extent
+- UI Feature → Allure Report
+- API Feature → Extent Report
 
-in the same run.
+within the same execution.
 
 ---
 
-# Consumer Setup
+# Consumer Project Configuration
 
-## Step 1 — Add Dependency
+## Step 1 — Add GemReport Dependency
 
-```xml id="83mykj"
+```xml
 <dependency>
     <groupId>com.gemini</groupId>
     <artifactId>GemReport</artifactId>
@@ -206,17 +212,17 @@ in the same run.
 
 ---
 
-## Step 2 — Add Listener (TestNG Projects)
+## Step 2 — Configure TestNG Listener
 
 Using annotation:
 
-
+```
 @Listeners(com.gemini.reporting.listener.ReportingListener.class)
+```
 
+or in `testng.xml`:
 
-OR in `testng.xml`:
-
-```xml id="7se6w8"
+```xml
 <listener class-name="com.gemini.reporting.listener.ReportingListener"/>
 ```
 
@@ -226,53 +232,100 @@ OR in `testng.xml`:
 
 ### Selenium
 
-
+```
 ReportingContext.setDriver(driver);
-
+```
 
 ### API
 
+```
 ReportingContext.setApiLog(apiLog);
-
+```
 
 ### Playwright
 
+```
 ReportingContext.setPwScreenshot(bytes);
-
+```
 
 ---
 
-## Step 4 — Add Logs (Optional)
+## Step 4 — Add Execution Logs (Optional)
 
+```
 ReportLogger.info("Opening browser");
 ReportLogger.pass("Login successful");
 ReportLogger.fail("Validation failed");
+```
 
+These logs appear automatically in:
 
-Logs appear in both:
-
-* Extent
-* Allure
+- Extent Reports
+- Allure Reports
 
 ---
 
-# Cucumber Setup
+# TestNG Consumer Requirements
 
-For Cucumber consumer projects:
+To support profile-based report switching, the consumer project's `pom.xml` must define reporting profiles.
 
-Add:
+Example:
 
-* Feature files
-* Step definitions
-* Hooks
-* Dynamic runner
+```xml
+<profiles>
+
+    <profile>
+        <id>extent</id>
+        <properties>
+            <reportType>extent</reportType>
+        </properties>
+    </profile>
+
+    <profile>
+        <id>allure</id>
+        <properties>
+            <reportType>allure</reportType>
+        </properties>
+    </profile>
+
+</profiles>
+```
+
+This enables execution using:
+
+```bash
+mvn clean test -Pextent
+```
+
+or
+
+```bash
+mvn clean test -Pallure
+```
+
+Without these profiles, profile-based report switching is not available.
+
+---
+
+# Cucumber Consumer Requirements
+
+Cucumber consumer projects require:
+
+- Feature Files
+- Step Definitions
+- Consumer Hooks
+- GemReport Cucumber Hooks
+- GemReport Dynamic Runner
 
 Required glue:
 
+```
 stepdefinitions
 hooks
 com.gemini.reporting.cucumber
+```
 
+The Dynamic Runner is mandatory for feature-level report switching.
 
 ---
 
@@ -280,51 +333,73 @@ com.gemini.reporting.cucumber
 
 ## Extent Report
 
-```text id="u3iz1d"
-/test-output/ExtentReport.html
 ```
+test-output/ExtentReport.html
+```
+
+---
 
 ## Allure Results
 
-```text id="g7d5h8"
-/allure-results
+```
+allure-results/
 ```
 
-View report:
+View the report using:
 
-```bash id="uljlwm"
+```bash
 allure serve allure-results
 ```
 
 ---
 
+# Prerequisites
+
+- Java 21 or later
+- Maven 3.9 or later
+- Allure CLI (required only for viewing Allure reports)
+- TestNG consumer projects must configure Maven reporting profiles
+- Cucumber consumer projects must use the GemReport Dynamic Runner
+
+---
+
 # Advantages
 
-* Plug-and-play
-* Minimal integration effort
-* Multi-framework support
-* Centralized reporting
-* Rich failure evidence
-* Command-line switching
-* Cucumber tag-based switching
+- Plug-and-play integration
+- Multi-framework support
+- Unified reporting solution
+- Extent and Allure reporting
+- Feature-level report switching for Cucumber
+- Command-line report switching for TestNG
+- Dynamic Cucumber Runner
+- Step-level execution logs
+- Automatic screenshot capture
+- Automatic API log attachments
+- Rich failure evidence
+- Centralized reporting
+- Minimal consumer configuration
+- Easily reusable across automation projects
 
 ---
 
 # Summary
 
-GemReport provides a unified reporting solution for:
+GemReport provides a reusable, unified reporting SDK for:
 
-* Selenium
-* API
-* Playwright
-* TestNG
-* Cucumber
+- Selenium
+- REST Assured
+- Playwright
+- TestNG
+- Cucumber
 
-with:
+with built-in support for:
 
-* Extent Reports
-* Allure Reports
-* Screenshots
-* API Attachments
-* Execution Logs
-* Dynamic Report Switching
+- Extent Reports
+- Allure Reports
+- Execution Logs
+- Browser Screenshots
+- API Attachments
+- Failure Evidence
+- Dynamic Report Switching
+- Feature-Level Report Selection
+- Plug-and-Play Integration
