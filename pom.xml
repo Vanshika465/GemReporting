@@ -1,14 +1,62 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.gemini</groupId>
+    <groupId>io.github.vanshika465</groupId>
     <artifactId>GemReport</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
+    <name>Gem Reporting SDK</name>
+
+    <description>
+        A plug-and-play Java reporting SDK supporting Selenium, TestNG,
+        Cucumber, Playwright and REST Assured with Extent Reports and Allure Reports.
+    </description>
+
+    <url>https://github.com/Vanshika465/GemReporting</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>Vanshika465</id>
+            <name>Vanshika Chawla</name>
+            <email>vanshikachawla465@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>
+            scm:git:https://github.com/Vanshika465/GemReporting.git
+        </connection>
+
+        <developerConnection>
+            scm:git:ssh://git@github.com:Vanshika465/GemReporting.git
+        </developerConnection>
+
+        <url>
+            https://github.com/Vanshika465/GemReporting
+        </url>
+
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+
     </properties>
 
     <dependencies>
@@ -63,5 +111,130 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+
+        <plugins>
+
+            <!-- Compiler -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+
+            </plugin>
+
+            <!-- Tests -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+            </plugin>
+
+            <!-- Sources -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+            <!-- Javadocs -->
+
+            <plugin>
+
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.8.0</version>
+
+                <configuration>
+                    <source>21</source>
+                    <failOnError>false</failOnError>
+                </configuration>
+
+                <executions>
+
+                    <execution>
+
+                        <id>attach-javadocs</id>
+
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+
+                    </execution>
+
+                </executions>
+
+            </plugin>
+
+            <!-- GPG Signing -->
+
+            <plugin>
+
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.7</version>
+
+                <executions>
+
+                    <execution>
+
+                        <id>sign-artifacts</id>
+
+                        <phase>verify</phase>
+
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+
+                    </execution>
+
+                </executions>
+
+            </plugin>
+
+            <!-- Maven Central -->
+
+            <plugin>
+
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.11.0</version>
+
+                <extensions>true</extensions>
+
+                <configuration>
+
+                    <publishingServerId>central</publishingServerId>
+
+                    <autoPublish>false</autoPublish>
+
+                    <waitUntil>published</waitUntil>
+
+                </configuration>
+
+            </plugin>
+
+        </plugins>
+
+    </build>
 
 </project>
