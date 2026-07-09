@@ -197,6 +197,14 @@ This enables:
 within the same execution.
 
 ---
+## Version 1.1.0
+
+### New Features
+
+- Execution Summary Excel Report
+- Execution Summary Text Report
+- Better SDK initialization
+- Improved Extent Report support
 
 # Consumer Project Configuration
 
